@@ -140,6 +140,8 @@ export interface ThreadMessage {
   toolResult?: { toolCallId?: string; toolName?: string; isError?: boolean; text: string }
   usage?: Usage
   model?: string
+  /** Absolute path of a file the user was viewing when they sent this message. */
+  attachedFile?: string
 }
 
 export interface SessionSummary {

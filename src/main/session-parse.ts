@@ -8,6 +8,7 @@ import type {
   Usage,
   RawMessage
 } from '@shared/types'
+import { parseViewingContext } from '@shared/viewing-context'
 
 /**
  * Decode a sessions/ folder name back to its working directory.
@@ -118,15 +119,25 @@ export function toThread(records: SessionRecord[]): ThreadMessage[] {
       continue
     }
     const { text, thinking, toolCalls } = blockText(m)
+    // Strip any injected "currently-viewing" context from user messages so the
+    // chat shows only what the user typed, surfacing it as an attachment instead.
+    let displayText = text
+    let attachedFile: string | undefined
+    if (m.role === 'user' && text) {
+      const parsed = parseViewingContext(text)
+      displayText = parsed.text
+      attachedFile = parsed.file
+    }
     messages.push({
       id: r.id ?? cryptoId(),
       role: m.role,
       timestamp: r.timestamp,
-      text: text || undefined,
+      text: displayText || undefined,
       thinking: thinking || undefined,
       toolCalls: toolCalls.length ? toolCalls : undefined,
       usage: m.usage,
-      model: m.responseModel ?? m.model
+      model: m.responseModel ?? m.model,
+      attachedFile
     })
   }
   return messages
@@ -220,7 +231,7 @@ export async function summarize(filePath: string) {
     if (m.usage?.totalTokens) totalTokens += m.usage.totalTokens
     if (title === '(empty session)' && m.role === 'user') {
       const firstText = (m.content ?? []).find((b) => b.type === 'text') as { text?: string } | undefined
-      if (firstText?.text) title = truncate(firstText.text, 80)
+      if (firstText?.text) title = truncate(parseViewingContext(firstText.text).text, 80)
     }
   }
   return { path: filePath, id, timestamp, title, messageCount, totalTokens, cwd }

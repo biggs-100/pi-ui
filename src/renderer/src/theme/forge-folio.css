@@ -520,6 +520,55 @@ button:focus-visible {
   color: var(--text-faint);
 }
 
+/* "Currently viewing" attachment chip on a user bubble */
+.attach-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-2);
+}
+
+/* Attachment indicator above the composer */
+.attach-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-0);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-2);
+}
+.attach-bar.on {
+  border-color: var(--copper-dim);
+}
+.attach-bar .attach-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-faint);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+.attach-bar .attach-toggle:hover {
+  color: var(--copper-bright);
+  background: var(--bg-2);
+}
+
 /* ============================ Inspector (right) ============================ */
 
 .filetree {

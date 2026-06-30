@@ -9,6 +9,7 @@ import type {
   AgentEvent,
   ThreadMessage
 } from '@shared/types'
+import { wrapWithViewingContext } from '@shared/viewing-context'
 
 const heph = window.heph
 
@@ -41,6 +42,8 @@ interface State {
   fileTree: FileNode[]
   selectedFile: string | null
   fileContent: FileContent | null
+  /** When true, the file being viewed is silently attached to the next prompt. */
+  attachViewedFile: boolean
 
   // status
   backend: Record<string, BackendHealth>
@@ -58,6 +61,7 @@ interface State {
   toggleProject: (p: ProjectSummary) => void
   selectSession: (harnessId: string, path: string, cwd: string) => Promise<void>
   selectFile: (path: string) => Promise<void>
+  setAttachViewedFile: (on: boolean) => void
   refreshBackend: (harnessId: string) => Promise<void>
 
   sendPrompt: (text: string) => Promise<void>
@@ -88,6 +92,7 @@ export const useStore = create<State>((set, get) => ({
   fileTree: [],
   selectedFile: null,
   fileContent: null,
+  attachViewedFile: true,
 
   backend: {},
 
@@ -181,7 +186,8 @@ export const useStore = create<State>((set, get) => ({
   },
 
   selectFile: async (path) => {
-    set({ selectedFile: path })
+    // Opening a new file re-enables auto-attach for it.
+    set({ selectedFile: path, attachViewedFile: true })
     try {
       const fileContent = await heph.readFile(path)
       set({ fileContent })
@@ -189,6 +195,8 @@ export const useStore = create<State>((set, get) => ({
       set({ fileContent: null })
     }
   },
+
+  setAttachViewedFile: (on) => set({ attachViewedFile: on }),
 
   refreshBackend: async (harnessId) => {
     try {
@@ -203,8 +211,20 @@ export const useStore = create<State>((set, get) => ({
     const harnessId = get().activeHarnessId()
     const cwd = get().selectedCwd
     if (!harnessId || !cwd) return
-    // Optimistically append the user message.
-    const userMsg: ThreadMessage = { id: `local-${Date.now()}`, role: 'user', text }
+
+    // If a file is open and auto-attach is on, silently tell the agent which
+    // file the user is looking at so references like "this" resolve. The chat
+    // bubble keeps showing only the typed text (plus an attachment chip).
+    const file = get().selectedFile
+    const attach = get().attachViewedFile && !!file
+    const sentText = attach ? wrapWithViewingContext(text, file as string) : text
+
+    const userMsg: ThreadMessage = {
+      id: `local-${Date.now()}`,
+      role: 'user',
+      text,
+      attachedFile: attach ? (file as string) : undefined
+    }
     set((s) => ({
       session: s.session
         ? { ...s.session, messages: [...s.session.messages, userMsg] }
@@ -230,7 +250,7 @@ export const useStore = create<State>((set, get) => ({
       }))
       return
     }
-    await heph.agentSend({ harnessId, text })
+    await heph.agentSend({ harnessId, text: sentText })
   },
 
   abort: async () => {

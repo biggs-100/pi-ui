@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Send, Square, Hammer, Flame } from 'lucide-react'
+import { Send, Square, Hammer, Flame, Paperclip, X } from 'lucide-react'
 import { useStore } from '../store/store'
 import { MarkdownView } from './MarkdownView'
 import type { ThreadMessage } from '@shared/types'
@@ -77,7 +77,15 @@ function Message({ m }: { m: ThreadMessage }): JSX.Element | null {
   if (m.role === 'user') {
     return (
       <div className="msg user">
-        <div className="bubble">{m.text}</div>
+        <div className="bubble">
+          {m.text}
+          {m.attachedFile && (
+            <div className="attach-chip" title={m.attachedFile}>
+              <Paperclip size={11} />
+              {basename(m.attachedFile)}
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -137,10 +145,14 @@ function Composer(): JSX.Element {
   const harnesses = useStore((s) => s.harnesses)
   const view = useStore((s) => s.view)
   const selectedCwd = useStore((s) => s.selectedCwd)
+  const selectedFile = useStore((s) => s.selectedFile)
+  const attachViewedFile = useStore((s) => s.attachViewedFile)
+  const setAttachViewedFile = useStore((s) => s.setAttachViewedFile)
 
   const harnessId = view === 'dashboard' ? null : view.harnessId
   const harness = harnesses.find((h) => h.id === harnessId)
   const canSend = !!harness?.cli && !!selectedCwd
+  const showAttach = canSend && !!selectedFile
 
   const submit = () => {
     const t = text.trim()
@@ -153,6 +165,29 @@ function Composer(): JSX.Element {
 
   return (
     <div className="composer">
+      {showAttach && (
+        <div className={`attach-bar ${attachViewedFile ? 'on' : 'off'}`}>
+          <Paperclip size={12} />
+          {attachViewedFile ? (
+            <>
+              <span>
+                Referencing <span className="copper">{basename(selectedFile as string)}</span> — the agent
+                will know you mean this file
+              </span>
+              <button className="attach-toggle" title="Don't attach" onClick={() => setAttachViewedFile(false)}>
+                <X size={12} />
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="muted">{basename(selectedFile as string)} not attached</span>
+              <button className="attach-toggle" onClick={() => setAttachViewedFile(true)}>
+                attach
+              </button>
+            </>
+          )}
+        </div>
+      )}
       <div className="box">
         <textarea
           rows={1}
@@ -199,4 +234,8 @@ function formatArgs(args: unknown): string {
 
 function truncate(s: string, n: number): string {
   return s.length > n ? s.slice(0, n) + `\n… (${s.length - n} more chars)` : s
+}
+
+function basename(p: string): string {
+  return p.split('/').pop() ?? p
 }
