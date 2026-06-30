@@ -61,6 +61,7 @@ const CODE_LANGS: Record<string, string> = {
 
 const MARKDOWN_EXT = new Set(['.md', '.markdown', '.mdx'])
 const SPREADSHEET_EXT = new Set(['.csv', '.tsv', '.xlsx', '.xlsm', '.xls', '.ods'])
+const JSONL_EXT = new Set(['.jsonl', '.ndjson'])
 const MAX_BYTES = 1_000_000 // 1MB cap for text preview
 const MAX_SHEET_BYTES = 15_000_000 // 15MB cap for spreadsheet parsing
 const MAX_ROWS = 1000
@@ -145,6 +146,21 @@ export class FileService {
     const stat = await fs.stat(filePath)
     const truncated = stat.size > MAX_BYTES
 
+    if (ext === '.json' && stat.size <= MAX_SHEET_BYTES) {
+      const sheets = await this.readJsonArray(filePath)
+      if (sheets) {
+        return { path: filePath, kind: 'spreadsheet', content: '', sheets, truncated: false }
+      }
+    }
+
+    if (JSONL_EXT.has(ext)) {
+      if (stat.size > MAX_SHEET_BYTES) {
+        return { path: filePath, kind: 'binary', content: '', truncated: true }
+      }
+      const sheets = await this.readJsonl(filePath)
+      return { path: filePath, kind: 'spreadsheet', content: '', sheets, truncated: false }
+    }
+
     if (SPREADSHEET_EXT.has(ext)) {
       if (stat.size > MAX_SHEET_BYTES) {
         return { path: filePath, kind: 'binary', content: '', truncated: true }
@@ -205,11 +221,123 @@ export class FileService {
       await handle.close()
     }
   }
+
+  /**
+   * Parse a JSONL / NDJSON file into a spreadsheet. Each line is a JSON object;
+   * the union of all keys becomes the header row and each object becomes a data
+   * row. Nested values are JSON-stringified.
+   */
+  private async readJsonl(filePath: string): Promise<SheetData[]> {
+    const raw = await fs.readFile(filePath, 'utf8')
+    const lines = raw.split('\n').filter((l) => l.trim())
+    const objects: Record<string, unknown>[] = []
+    const keyOrder: string[] = []
+    const keySeen = new Set<string>()
+
+    let clipped = false
+    for (const line of lines) {
+      if (objects.length >= MAX_ROWS) {
+        clipped = true
+        break
+      }
+      try {
+        const obj = JSON.parse(line)
+        if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+          for (const k of Object.keys(obj)) {
+            if (!keySeen.has(k)) {
+              keySeen.add(k)
+              keyOrder.push(k)
+            }
+          }
+          objects.push(obj as Record<string, unknown>)
+        }
+      } catch {
+        // skip malformed lines
+      }
+    }
+
+    const cols = keyOrder.slice(0, MAX_COLS)
+    if (keyOrder.length > MAX_COLS) clipped = true
+    const header = cols
+    const rows: string[][] = [header]
+    for (const obj of objects) {
+      rows.push(cols.map((k) => jsonlCellToString(obj[k])))
+    }
+    return [{ name: path.basename(filePath), rows, clipped }]
+  }
+
+  /**
+   * Parse a JSON file. If it's an array of objects, convert it into a spreadsheet.
+   * Returns null if it's not an array of objects or if parsing fails.
+   */
+  private async readJsonArray(filePath: string): Promise<SheetData[] | null> {
+    try {
+      const raw = await fs.readFile(filePath, 'utf8')
+      const parsed = JSON.parse(raw)
+      
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        return null
+      }
+
+      // Check if it's an array of objects
+      const isArrayOfObjects = parsed.some(
+        (item) => typeof item === 'object' && item !== null && !Array.isArray(item)
+      )
+      
+      if (!isArrayOfObjects) {
+        return null
+      }
+
+      const objects: Record<string, unknown>[] = []
+      const keyOrder: string[] = []
+      const keySeen = new Set<string>()
+      let clipped = false
+
+      for (const item of parsed) {
+        if (objects.length >= MAX_ROWS) {
+          clipped = true
+          break
+        }
+        if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+          for (const k of Object.keys(item)) {
+            if (!keySeen.has(k)) {
+              keySeen.add(k)
+              keyOrder.push(k)
+            }
+          }
+          objects.push(item as Record<string, unknown>)
+        }
+      }
+
+      const cols = keyOrder.slice(0, MAX_COLS)
+      if (keyOrder.length > MAX_COLS) clipped = true
+      const header = cols
+      const rows: string[][] = [header]
+      for (const obj of objects) {
+        rows.push(cols.map((k) => jsonlCellToString(obj[k])))
+      }
+      return [{ name: path.basename(filePath), rows, clipped }]
+    } catch {
+      return null
+    }
+  }
 }
 
 function cellToString(c: unknown): string {
   if (c == null) return ''
   if (c instanceof Date) return c.toISOString().slice(0, 10)
+  return String(c)
+}
+
+function jsonlCellToString(c: unknown): string {
+  if (c == null) return ''
+  if (typeof c === 'object') {
+    try {
+      return JSON.stringify(c)
+    } catch {
+      return String(c)
+    }
+  }
   return String(c)
 }
 
