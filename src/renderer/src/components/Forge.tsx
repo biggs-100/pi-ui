@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Send, Square, Hammer, Flame, Paperclip, X } from 'lucide-react'
+import { Send, Square, Flame, Paperclip, X } from 'lucide-react'
 import { useStore, selectCurrentRun, isWorking } from '../store/store'
 import { MarkdownView } from './MarkdownView'
 import { ForgeAnvil } from './ForgeAnvil'
+import { BallPeenHammer } from './BallPeenHammer'
 import type { ThreadMessage } from '@shared/types'
 
 export function Forge(): JSX.Element {
@@ -48,7 +49,7 @@ export function Forge(): JSX.Element {
     return (
       <div className="pane forge">
         <div className="pane-header">
-          <Hammer size={14} className="copper" />
+          <BallPeenHammer size={14} className="copper" />
           <span className="label-tech">Forge — New Session</span>
         </div>
         <div className="pane-body">
@@ -68,7 +69,7 @@ export function Forge(): JSX.Element {
   return (
     <div className="pane forge">
       <div className="pane-header">
-        <Hammer size={14} className="copper" />
+        <BallPeenHammer size={14} className="copper" />
         <span className="label-tech">{selectedSessionPath ? 'Forge — Session' : 'Forge — New Session'}</span>
       </div>
       <div className="pane-body">
@@ -168,7 +169,7 @@ function SettledAssistant({ text, thinking }: { text: string; thinking: string }
   return (
     <div className="msg assistant">
       <div className="avatar">
-        <Hammer size={15} />
+        <BallPeenHammer size={16} />
       </div>
       <div className="body">
         {thinking && showThinking && !text && (
@@ -234,7 +235,7 @@ function Message({ m }: { m: ThreadMessage }): JSX.Element | null {
   return (
     <div className="msg assistant">
       <div className="avatar">
-        <Hammer size={15} />
+        <BallPeenHammer size={16} />
       </div>
       <div className="body">
         {showThinkingBlock && (
@@ -341,7 +342,7 @@ function Composer(): JSX.Element {
         <textarea
           ref={taRef}
           rows={1}
-          placeholder={canSend ? 'Command the forge…' : 'Viewing only — no RPC launcher for this harness'}
+          placeholder={canSend ? 'Fire up the forge…' : 'Viewing only — no RPC launcher for this harness'}
           value={text}
           disabled={!canSend}
           onChange={(e) => setText(e.target.value)}

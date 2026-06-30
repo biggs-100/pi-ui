@@ -188,6 +188,7 @@ interface State {
   ) => void
 
   addHarness: (input: { label: string; agentDir: string }) => Promise<void>
+  removeHarness: (id: string) => Promise<void>
 
   activeHarnessId: () => string | null
   loadProjects: (harnessId: string) => Promise<void>
@@ -353,6 +354,20 @@ export const useStore = create<State>((set, get) => {
       get().setView({ harnessId: added.id })
       void get().refreshBackend(added.id)
     }
+  },
+
+  removeHarness: async (id) => {
+    const harnesses = await heph.removeHarness(id)
+    // If the removed harness was active, navigate to dashboard or first remaining harness.
+    const active = get().activeHarnessId()
+    if (active === id) {
+      if (harnesses[0]) {
+        get().setView({ harnessId: harnesses[0].id })
+      } else {
+        get().setView('dashboard')
+      }
+    }
+    set({ harnesses })
   },
 
   activeHarnessId: () => {

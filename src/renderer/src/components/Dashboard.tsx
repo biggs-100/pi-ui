@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Hammer, Activity, FolderGit2, MessagesSquare } from 'lucide-react'
+import { Activity, FolderGit2, MessagesSquare } from 'lucide-react'
 import { useStore } from '../store/store'
+import { BallPeenHammer } from './BallPeenHammer'
 import type { ProjectSummary } from '@shared/types'
 
 interface HarnessStats {
@@ -49,7 +50,7 @@ export function Dashboard(): JSX.Element {
           return (
             <div className="card" key={s.id}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Hammer size={16} className="copper" />
+                <BallPeenHammer size={16} className="copper" />
                 <h3>{s.label}</h3>
                 <span
                   className="label-tech"

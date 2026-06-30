@@ -6,7 +6,6 @@ import {
   Folder,
   FolderPlus,
   Plus,
-  Hammer,
   CheckSquare,
   Square,
   Archive,
@@ -16,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useStore, projectKey, samePath, isActive } from '../store/store'
 import { ForgeAnvil } from './ForgeAnvil'
+import { BallPeenHammer } from './BallPeenHammer'
 import type { ProjectSummary } from '@shared/types'
 
 function formatTokens(n: number): string {
@@ -149,7 +149,7 @@ export function Projects(): JSX.Element {
 
       <div className="active-harness">
         <div className="crest">
-          <Hammer size={15} />
+          <BallPeenHammer size={16} />
         </div>
         <div>
           <div className="label-tech" style={{ fontSize: 9 }}>

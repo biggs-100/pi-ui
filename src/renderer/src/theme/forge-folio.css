@@ -164,11 +164,29 @@ button:focus-visible {
   user-select: none;
 }
 
+/* Sidebar toggle — sits between brand and tabs, near the panel it controls */
+.zen-toggle {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  color: var(--text-2);
+  margin-right: 8px;
+}
+.zen-toggle:hover {
+  color: var(--copper-bright);
+  background: var(--bg-2);
+}
+
 .nav-tabs {
   display: flex;
   gap: 4px;
 }
 .nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 7px 14px;
   border-radius: var(--radius);
   text-transform: uppercase;
@@ -192,6 +210,27 @@ button:focus-visible {
   bottom: -1px;
   height: 2px;
   background: var(--copper);
+}
+
+/* Close button on harness tabs — fades in on hover */
+.tab-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  margin-left: 2px;
+  opacity: 0;
+  color: var(--text-faint);
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+.nav-tab:hover .tab-close {
+  opacity: 1;
+}
+.tab-close:hover {
+  color: var(--copper-bright);
+  background: var(--bg-3);
 }
 
 .nav-add {
@@ -436,10 +475,10 @@ button:focus-visible {
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  background: linear-gradient(135deg, var(--copper), var(--copper-dim));
+  background: transparent;
   display: grid;
   place-items: center;
-  color: #1a1614;
+  color: var(--copper-bright);
 }
 
 /* Drop-zone overlay for drag-and-drop project adding */
@@ -505,8 +544,8 @@ button:focus-visible {
   color: var(--text-0);
 }
 .msg.assistant .avatar {
-  background: linear-gradient(135deg, var(--copper), var(--copper-dim));
-  color: #1a1614;
+  background: transparent;
+  color: var(--copper-bright);
 }
 .msg.assistant .body {
   flex: 1;
