@@ -246,6 +246,25 @@ export interface BackendHealth {
 // Agent driver (RPC) events
 // ---------------------------------------------------------------------------
 
+/**
+ * Interactive-prompt request from the harness (RPC `extension_ui_request`). An
+ * extension paused the turn via `ctx.ui.*` and awaits a matching
+ * `extension_ui_response` on stdin. Mirrors pi-forge's `RpcExtensionUIRequest`
+ * for the methods we support (blocking prompts + non-blocking `notify`).
+ */
+export type ExtensionUIRequest =
+  | { id: string; method: 'select'; title: string; options: string[]; timeout?: number }
+  | { id: string; method: 'confirm'; title: string; message: string; timeout?: number }
+  | { id: string; method: 'input'; title: string; placeholder?: string; timeout?: number }
+  | { id: string; method: 'editor'; title: string; prefill?: string }
+  | { id: string; method: 'notify'; message: string; notifyType?: 'info' | 'warning' | 'error' }
+
+/** The three response shapes the harness accepts for an `extension_ui_request`. */
+export type ExtensionUIResponse =
+  | { value: string }
+  | { confirmed: boolean }
+  | { cancelled: true }
+
 export interface AgentEvent {
   /** Stable id of the run this event belongs to (assigned by the driver on open). */
   runId: string
@@ -261,6 +280,8 @@ export interface AgentEvent {
   /** Streaming reasoning/thinking delta, when present. */
   thinkingDelta?: string
   toolName?: string
+  /** Interactive-prompt request payload (carried on `extension_ui_request`). */
+  ui?: ExtensionUIRequest
   // Abnormal-termination detail (carried on `error`/`agent_exit` events).
   exitCode?: number | null
   signal?: string | null
@@ -292,6 +313,8 @@ export interface RunSnapshot {
   thinkingTail: string
   /** Human-readable failure reason when status === 'error'. */
   error?: string
+  /** An in-flight blocking prompt awaiting a response, so a reconnecting renderer restores it. */
+  pendingUi?: ExtensionUIRequest | null
 }
 
 // ---------------------------------------------------------------------------
@@ -357,6 +380,8 @@ export interface HephApi {
     sessionPath?: string
   }): Promise<{ ok: boolean; reason?: string; runId?: string }>
   agentSend(input: { runId: string; text: string }): Promise<{ ok: boolean; reason?: string }>
+  /** Answer an in-flight interactive prompt (RPC `extension_ui_response`). */
+  agentRespond(input: { runId: string; response: ExtensionUIResponse }): Promise<void>
   agentAbort(runId: string): Promise<void>
   agentClose(runId: string): Promise<void>
   /** Snapshot every live run so the renderer can resync after a reload/disconnect. */

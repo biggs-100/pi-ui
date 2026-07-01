@@ -2,7 +2,14 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import readline from 'node:readline'
 import path from 'node:path'
 import { existsSync } from 'node:fs'
-import type { AgentEvent, HarnessConfig, RunSnapshot, RunStatus } from '@shared/types'
+import type {
+  AgentEvent,
+  ExtensionUIRequest,
+  ExtensionUIResponse,
+  HarnessConfig,
+  RunSnapshot,
+  RunStatus
+} from '@shared/types'
 import { augmentedPath } from './paths'
 
 /**
@@ -88,6 +95,11 @@ export class AgentDriver {
     return s.send(text)
   }
 
+  /** Answer an in-flight interactive prompt for a run (RPC extension_ui_response). */
+  respond(runId: string, response: ExtensionUIResponse): void {
+    this.runs.get(runId)?.respond(response)
+  }
+
   abort(runId: string): void {
     this.runs.get(runId)?.abort()
   }
@@ -160,6 +172,8 @@ class AgentSession {
   private userAborted = false
   private finished = false
   private statePoll?: ReturnType<typeof setTimeout>
+  /** A blocking interactive prompt the turn is paused on, awaiting our response. */
+  private pendingUi: ExtensionUIRequest | null = null
 
   constructor(
     readonly runId: string,
@@ -262,6 +276,22 @@ class AgentSession {
       this.currentTool = undefined
       this.streamTail = ''
       this.thinkingTail = ''
+      // The turn ended, so any prompt it was blocked on is moot.
+      this.pendingUi = null
+    }
+
+    // An extension paused the turn to ask the user something (RPC
+    // extension_ui_request). The turn stays running (blocked); we forward the
+    // request so the renderer can show a rich prompt and write back the answer.
+    // Blocking methods are retained as pendingUi so a reconnecting renderer can
+    // restore the prompt; `notify` is fire-and-forget.
+    if (type === 'extension_ui_request') {
+      const ui = parseUiRequest(evt)
+      if (ui) {
+        if (ui.method !== 'notify') this.pendingUi = ui
+        this.emitEvent(type, { ui })
+        return
+      }
     }
 
     this.emitEvent(type, { delta, thinkingDelta, toolName })
@@ -286,9 +316,29 @@ class AgentSession {
     }
   }
 
+  /**
+   * Answer the in-flight interactive prompt by writing an extension_ui_response
+   * on stdin (same channel as prompt/abort). The response is matched to the
+   * pending request by its id; the harness's paused promise then resolves and
+   * the turn continues.
+   */
+  respond(response: ExtensionUIResponse): void {
+    const id = this.pendingUi?.id
+    if (!id) return
+    this.pendingUi = null
+    try {
+      this.child.stdin.write(
+        JSON.stringify({ type: 'extension_ui_response', id, ...response }) + '\n'
+      )
+    } catch {
+      // ignore — a dead pipe surfaces via the child error/exit handlers
+    }
+  }
+
   abort(): void {
     this.userAborted = true
     this.status = 'idle'
+    this.pendingUi = null
     try {
       this.child.stdin.write(JSON.stringify({ type: 'abort' }) + '\n')
     } catch {
@@ -307,7 +357,8 @@ class AgentSession {
       startedAt: this.startedAt,
       streamTail: this.streamTail,
       thinkingTail: this.thinkingTail,
-      error: this.errorReason
+      error: this.errorReason,
+      pendingUi: this.pendingUi
     }
   }
 
@@ -334,6 +385,8 @@ class AgentSession {
   private onExit(code: number | null, signal: NodeJS.Signals | null): void {
     if (this.finished) return
     this.finished = true
+    // The process is gone; any prompt it was blocked on can never be answered.
+    this.pendingUi = null
     // Exiting while a turn is in flight (not user-aborted, not cleanly idle) is a
     // crash; report it. Exiting while idle/aborted is expected teardown.
     const abnormal = !this.userAborted && this.status !== 'idle'
@@ -357,6 +410,7 @@ class AgentSession {
     this.status = 'error'
     this.errorReason = reason
     this.finished = true
+    this.pendingUi = null
     this.emitEvent('error', {
       errorReason: reason,
       stderrTail: this.stderrTail.trim() || undefined,
@@ -380,6 +434,64 @@ class AgentSession {
 
 function clip(s: string, max: number): string {
   return s.length > max ? s.slice(s.length - max) : s
+}
+
+/**
+ * Validate an extension_ui_request line into a typed request for the methods we
+ * support (blocking prompts + notify). Unknown/display-only methods (setStatus,
+ * setWidget, setTitle, set_editor_text, …) return undefined and fall through to
+ * the generic pass-through.
+ */
+function parseUiRequest(evt: Record<string, unknown>): ExtensionUIRequest | undefined {
+  const id = typeof evt.id === 'string' ? evt.id : undefined
+  const method = typeof evt.method === 'string' ? evt.method : undefined
+  if (!id || !method) return undefined
+  const str = (v: unknown): string => (typeof v === 'string' ? v : '')
+  switch (method) {
+    case 'select':
+      return {
+        id,
+        method,
+        title: str(evt.title),
+        options: Array.isArray(evt.options) ? evt.options.map(String) : [],
+        timeout: typeof evt.timeout === 'number' ? evt.timeout : undefined
+      }
+    case 'confirm':
+      return {
+        id,
+        method,
+        title: str(evt.title),
+        message: str(evt.message),
+        timeout: typeof evt.timeout === 'number' ? evt.timeout : undefined
+      }
+    case 'input':
+      return {
+        id,
+        method,
+        title: str(evt.title),
+        placeholder: typeof evt.placeholder === 'string' ? evt.placeholder : undefined,
+        timeout: typeof evt.timeout === 'number' ? evt.timeout : undefined
+      }
+    case 'editor':
+      return {
+        id,
+        method,
+        title: str(evt.title),
+        prefill: typeof evt.prefill === 'string' ? evt.prefill : undefined
+      }
+    case 'notify': {
+      const nt = evt.notifyType
+      return {
+        id,
+        method,
+        message: str(evt.message),
+        notifyType:
+          nt === 'info' || nt === 'warning' || nt === 'error' ? nt : undefined
+      }
+    }
+    default:
+      return undefined
+  }
 }
 
 /** Normalized, trailing-slash-tolerant path equality. */

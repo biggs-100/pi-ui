@@ -23,6 +23,7 @@ export const IPC = {
 
   agentOpen: 'agent:open',
   agentSend: 'agent:send',
+  agentRespond: 'agent:respond',
   agentAbort: 'agent:abort',
   agentClose: 'agent:close',
   agentListRuns: 'agent:listRuns',

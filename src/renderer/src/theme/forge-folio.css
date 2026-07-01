@@ -1571,3 +1571,97 @@ button:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .run-dot { animation: none; }
 }
+
+/* ---------------------------------------------------------------------------
+   Interactive prompts (harness extension_ui_request) + notices
+   --------------------------------------------------------------------------- */
+.prompt-card {
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--copper);
+  border-radius: var(--radius);
+  background: var(--bg-1);
+  padding: 14px 16px;
+  margin: 2px 0;
+}
+.prompt-title {
+  color: var(--copper-bright);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.prompt-message {
+  color: var(--text-1);
+  font-size: 13px;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+.prompt-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.prompt-card .field {
+  margin: 0 0 12px;
+}
+.prompt-editor {
+  width: 100%;
+  min-height: 64px;
+  resize: none;
+  background: var(--bg-0);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  color: var(--text-0);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.prompt-editor:focus {
+  outline: 1px solid var(--copper);
+}
+.prompt-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn.ghost {
+  border-color: transparent;
+  color: var(--text-2);
+}
+.btn.ghost:hover {
+  border-color: var(--border-strong);
+  color: var(--text-1);
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--copper);
+  border-radius: var(--radius);
+  background: var(--bg-1);
+  padding: 8px 10px;
+  margin: 2px 0;
+  font-size: 13px;
+  color: var(--text-1);
+}
+.notice .notice-msg {
+  flex: 1 1 auto;
+  white-space: pre-wrap;
+}
+.notice.info { border-left-color: var(--copper); }
+.notice.info svg { color: var(--copper); }
+.notice.warning { border-left-color: #c99a3f; }
+.notice.warning svg { color: #c99a3f; }
+.notice.error { border-left-color: #c0553f; }
+.notice.error svg { color: #c0553f; }
+.notice-close {
+  flex: 0 0 auto;
+  color: var(--text-faint);
+  display: inline-flex;
+}
+.notice-close:hover {
+  color: var(--text-1);
+}

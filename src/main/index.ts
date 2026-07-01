@@ -11,7 +11,7 @@ import { HarnessInstaller } from './harness-installer'
 import { getPreset } from '@shared/harness-presets'
 import { expandHome, normalizeDir } from './harness-registry'
 import { encodeCwd } from './session-parse'
-import type { AgentEvent, InstallEvent } from '@shared/types'
+import type { AgentEvent, ExtensionUIResponse, InstallEvent } from '@shared/types'
 
 const registry = new HarnessRegistry()
 const sessions = new SessionStore()
@@ -168,6 +168,11 @@ function registerIpc(): void {
   })
   ipcMain.handle(IPC.agentSend, async (_e, input: { runId: string; text: string }) =>
     agent.send(input.runId, input.text)
+  )
+  ipcMain.handle(
+    IPC.agentRespond,
+    async (_e, input: { runId: string; response: ExtensionUIResponse }) =>
+      agent.respond(input.runId, input.response)
   )
   ipcMain.handle(IPC.agentAbort, async (_e, runId: string) => agent.abort(runId))
   ipcMain.handle(IPC.agentClose, async (_e, runId: string) => agent.close(runId))

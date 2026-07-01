@@ -29,6 +29,7 @@ const api: HephApi = {
 
   agentOpen: (input) => ipcRenderer.invoke(IPC.agentOpen, input),
   agentSend: (input) => ipcRenderer.invoke(IPC.agentSend, input),
+  agentRespond: (input) => ipcRenderer.invoke(IPC.agentRespond, input),
   agentAbort: (runId) => ipcRenderer.invoke(IPC.agentAbort, runId),
   agentClose: (runId) => ipcRenderer.invoke(IPC.agentClose, runId),
   agentListRuns: () => ipcRenderer.invoke(IPC.agentListRuns),

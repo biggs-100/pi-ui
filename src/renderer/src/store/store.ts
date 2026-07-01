@@ -10,7 +10,9 @@ import type {
   RunStatus,
   RunSnapshot,
   ThreadMessage,
-  HarnessPresetStatus
+  HarnessPresetStatus,
+  ExtensionUIRequest,
+  ExtensionUIResponse
 } from '@shared/types'
 import { wrapWithViewingContext } from '@shared/viewing-context'
 
@@ -32,6 +34,33 @@ export interface RunState {
   /** Accumulated reasoning stream for this run. */
   thinking: string
   error?: string
+}
+
+/** A blocking interactive prompt from the harness awaiting the user's answer. */
+export interface PendingPrompt {
+  /** The request id (matches the harness's extension_ui_request). */
+  id: string
+  runId: string
+  cwd: string
+  sessionPath: string | null
+  /** Only blocking methods become prompts; `notify` is surfaced as a Notice instead. */
+  request: Exclude<ExtensionUIRequest, { method: 'notify' }>
+}
+
+/** A transient, non-blocking notice from the harness (`notify`). */
+export interface Notice {
+  id: string
+  message: string
+  kind: 'info' | 'warning' | 'error'
+}
+
+/** Pending prompts belonging to a given run. */
+export function promptsForRun(
+  pendingPrompts: Record<string, PendingPrompt>,
+  runId: string | undefined
+): PendingPrompt[] {
+  if (!runId) return []
+  return Object.values(pendingPrompts).filter((p) => p.runId === runId)
 }
 
 const ACTIVE: RunStatus[] = ['starting', 'running', 'finalizing']
@@ -157,6 +186,11 @@ interface State {
   /** True while a resync (agentListRuns) is in flight, for the reconnect chip. */
   reconnecting: boolean
 
+  // interactive prompts (extension_ui_request), keyed by request id
+  pendingPrompts: Record<string, PendingPrompt>
+  /** Transient non-blocking notices from the harness (`notify`). */
+  notices: Notice[]
+
   // inspector
   fileTree: FileNode[]
   selectedFile: string | null
@@ -226,6 +260,8 @@ interface State {
   browseAndAddProject: () => Promise<void>
 
   sendPrompt: (text: string) => Promise<void>
+  answerPrompt: (id: string, response: ExtensionUIResponse) => Promise<void>
+  dismissNotice: (id: string) => void
   abort: () => Promise<void>
   applySessionUpdate: (path: string) => Promise<void>
   applyAgentEvent: (e: AgentEvent) => void
@@ -266,6 +302,9 @@ export const useStore = create<State>((set, get) => {
 
   runs: {},
   reconnecting: false,
+
+  pendingPrompts: {},
+  notices: [],
 
   fileTree: [],
   selectedFile: null,
@@ -668,11 +707,36 @@ export const useStore = create<State>((set, get) => {
     await heph.agentSend({ runId, text: sentText })
   },
 
+  answerPrompt: async (id, response) => {
+    const p = get().pendingPrompts[id]
+    if (!p) return
+    // Remove first so the card can't be double-submitted while the write is in
+    // flight; the driver matches the response to the request by its id.
+    set((s) => {
+      const rest = { ...s.pendingPrompts }
+      delete rest[id]
+      return { pendingPrompts: rest }
+    })
+    try {
+      await heph.agentRespond({ runId: p.runId, response })
+    } catch {
+      // ignore — a dead run surfaces via its error/exit events
+    }
+  },
+
+  dismissNotice: (id) => set((s) => ({ notices: s.notices.filter((n) => n.id !== id) })),
+
   abort: async () => {
     const run = selectCurrentRun(get())
     if (!run) return
     await heph.agentAbort(run.runId)
-    set((s) => ({ runs: { ...s.runs, [run.runId]: { ...run, status: 'idle' } } }))
+    // Aborting releases any prompt this run was blocked on.
+    set((s) => {
+      const rest = Object.fromEntries(
+        Object.entries(s.pendingPrompts).filter(([, p]) => p.runId !== run.runId)
+      )
+      return { runs: { ...s.runs, [run.runId]: { ...run, status: 'idle' } }, pendingPrompts: rest }
+    })
   },
 
   applySessionUpdate: async (path) => {
@@ -745,8 +809,9 @@ export const useStore = create<State>((set, get) => {
     // Only actual output (deltas/tool activity) may create a run. Trailing/meta
     // events — late get_state responses, post-completion notices — must NOT
     // resurrect a run that finalizeRun already retired, or the working indicator
-    // would restart with no agent_end ever coming.
-    const isWork = !!(e.delta || e.thinkingDelta || e.toolName)
+    // would restart with no agent_end ever coming. An interactive prompt counts
+    // as work: the turn paused mid-flight to ask the user something.
+    const isWork = !!(e.delta || e.thinkingDelta || e.toolName || type === 'extension_ui_request')
 
     set((s) => {
       const prev = s.runs[runId]
@@ -782,6 +847,36 @@ export const useStore = create<State>((set, get) => {
 
       return { runs: { ...s.runs, [runId]: next } }
     })
+
+    // An extension paused the turn to ask the user something. Blocking methods
+    // become a pending prompt card; `notify` is a transient, no-response notice.
+    if (type === 'extension_ui_request' && e.ui) {
+      const ui = e.ui
+      if (ui.method === 'notify') {
+        const notice: Notice = { id: ui.id, message: ui.message, kind: ui.notifyType ?? 'info' }
+        set((s) => ({ notices: [...s.notices, notice] }))
+      } else {
+        const run = get().runs[runId]
+        const pending: PendingPrompt = {
+          id: ui.id,
+          runId,
+          cwd: e.cwd ?? run?.cwd ?? '',
+          sessionPath: e.sessionPath ?? run?.sessionPath ?? null,
+          request: ui
+        }
+        set((s) => ({ pendingPrompts: { ...s.pendingPrompts, [ui.id]: pending } }))
+      }
+    }
+
+    // The turn ended (cleanly, by error, or process exit) — any prompt it was
+    // blocked on can no longer be answered, so drop this run's pending prompts.
+    if (type === 'agent_end' || type === 'error' || type === 'agent_exit') {
+      set((s) => {
+        const kept = Object.entries(s.pendingPrompts).filter(([, p]) => p.runId !== runId)
+        if (kept.length === Object.keys(s.pendingPrompts).length) return {}
+        return { pendingPrompts: Object.fromEntries(kept) }
+      })
+    }
 
     if (type === 'session_bound' && e.sessionPath) {
       // The harness revealed the new session's file path (and it now exists on
@@ -902,7 +997,22 @@ export const useStore = create<State>((set, get) => {
           }
           runs[snap.runId] = fresh
         }
-        return { runs }
+        // Rehydrate any in-flight prompt so a reloaded renderer isn't stranded
+        // on a paused turn it can no longer answer.
+        const pendingPrompts = { ...s.pendingPrompts }
+        for (const snap of snaps) {
+          const ui = snap.pendingUi
+          if (ui && ui.method !== 'notify' && !pendingPrompts[ui.id]) {
+            pendingPrompts[ui.id] = {
+              id: ui.id,
+              runId: snap.runId,
+              cwd: snap.cwd,
+              sessionPath: snap.sessionPath,
+              request: ui
+            }
+          }
+        }
+        return { runs, pendingPrompts }
       })
     } catch {
       // ignore — best effort

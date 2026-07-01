@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { Send, Square, Flame, Paperclip, X } from 'lucide-react'
-import { useStore, selectCurrentRun, isWorking } from '../store/store'
+import { Send, Square, Flame, Paperclip, X, Info, AlertTriangle, XCircle } from 'lucide-react'
+import {
+  useStore,
+  selectCurrentRun,
+  isWorking,
+  promptsForRun,
+  type PendingPrompt,
+  type Notice
+} from '../store/store'
 import { MarkdownView } from './MarkdownView'
 import { ForgeAnvil } from './ForgeAnvil'
 import { BallPeenHammer } from './BallPeenHammer'
@@ -13,8 +20,11 @@ export function Forge(): JSX.Element {
   const selectedSessionPath = useStore((s) => s.selectedSessionPath)
   const selectedCwd = useStore((s) => s.selectedCwd)
   const messageSpacing = useStore((s) => s.messageSpacing)
+  const pendingPrompts = useStore((s) => s.pendingPrompts)
+  const notices = useStore((s) => s.notices)
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  const prompts = promptsForRun(pendingPrompts, run?.runId)
   const streamingText = run?.text ?? ''
   const streamingThinking = run?.thinking ?? ''
   const working = !!run && isWorking(run.status)
@@ -24,7 +34,15 @@ export function Forge(): JSX.Element {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [session?.messages.length, streamingText, streamingThinking, working, settling])
+  }, [
+    session?.messages.length,
+    streamingText,
+    streamingThinking,
+    working,
+    settling,
+    prompts.length,
+    notices.length
+  ])
 
   // Nothing selected at all — the cold forge.
   if (!selectedSessionPath && !selectedCwd && !run) {
@@ -89,9 +107,16 @@ export function Forge(): JSX.Element {
                 currentTool={run.currentTool}
                 text={streamingText}
                 thinking={streamingThinking}
+                waiting={prompts.length > 0}
               />
             )}
             {settling && <SettledAssistant text={streamingText} thinking={streamingThinking} />}
+            {prompts.map((p) => (
+              <InteractivePrompt key={p.id} prompt={p} />
+            ))}
+            {notices.map((n) => (
+              <NoticeRow key={n.id} notice={n} />
+            ))}
             <div ref={bottomRef} />
           </div>
         )}
@@ -106,13 +131,15 @@ function WorkingRow({
   startedAt,
   currentTool,
   text,
-  thinking
+  thinking,
+  waiting
 }: {
   status: string
   startedAt: number
   currentTool?: string
   text: string
   thinking: string
+  waiting?: boolean
 }): JSX.Element {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -120,8 +147,9 @@ function WorkingRow({
     return () => clearInterval(t)
   }, [])
   const elapsed = Math.max(0, Math.floor((now - startedAt) / 1000))
-  const label =
-    status === 'finalizing'
+  const label = waiting
+    ? 'Waiting for you'
+    : status === 'finalizing'
       ? 'Finishing'
       : currentTool
         ? `Running ${currentTool}`
@@ -180,6 +208,144 @@ function SettledAssistant({ text, thinking }: { text: string; thinking: string }
         )}
         {text && <MarkdownView source={text} />}
       </div>
+    </div>
+  )
+}
+
+/**
+ * A rich, inline card for an interactive prompt the harness raised mid-turn
+ * (RPC extension_ui_request). Answering writes an extension_ui_response back on
+ * the same channel, resuming the paused turn. Every variant offers a Cancel that
+ * sends `{cancelled:true}` so the turn can always be released.
+ */
+function InteractivePrompt({ prompt }: { prompt: PendingPrompt }): JSX.Element {
+  const answer = useStore((s) => s.answerPrompt)
+  const req = prompt.request
+  const cancel = (): void => void answer(prompt.id, { cancelled: true })
+
+  // input/editor local draft (editor seeds from prefill). Hooks run for every
+  // variant; only input/editor read the value.
+  const [draft, setDraft] = useState(() =>
+    req.method === 'editor' ? (req.prefill ?? '') : ''
+  )
+  const taRef = useRef<HTMLTextAreaElement>(null)
+  useEffect(() => {
+    const el = taRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 260)}px`
+  }, [draft])
+
+  return (
+    <div className="msg assistant">
+      <div className="avatar">
+        <BallPeenHammer size={16} />
+      </div>
+      <div className="body">
+        <div className={`prompt-card ${req.method}`}>
+          <div className="prompt-title">{req.title}</div>
+
+          {req.method === 'select' && (
+            <div className="prompt-options">
+              {req.options.map((opt) => (
+                <button
+                  key={opt}
+                  className="btn"
+                  onClick={() => void answer(prompt.id, { value: opt })}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {req.method === 'confirm' && req.message && (
+            <div className="prompt-message">{req.message}</div>
+          )}
+
+          {req.method === 'input' && (
+            <div className="field">
+              <input
+                autoFocus
+                placeholder={req.placeholder}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    void answer(prompt.id, { value: draft })
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {req.method === 'editor' && (
+            <textarea
+              ref={taRef}
+              className="prompt-editor"
+              autoFocus
+              rows={3}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+            />
+          )}
+
+          <div className="prompt-actions">
+            {req.method === 'confirm' ? (
+              <>
+                <button
+                  className="btn primary"
+                  onClick={() => void answer(prompt.id, { confirmed: true })}
+                >
+                  Confirm
+                </button>
+                <button
+                  className="btn"
+                  onClick={() => void answer(prompt.id, { confirmed: false })}
+                >
+                  Decline
+                </button>
+              </>
+            ) : req.method === 'input' || req.method === 'editor' ? (
+              <>
+                <button
+                  className="btn primary"
+                  onClick={() => void answer(prompt.id, { value: draft })}
+                >
+                  Submit
+                </button>
+                <button className="btn ghost" onClick={cancel}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button className="btn ghost" onClick={cancel}>
+                Cancel
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** A transient, auto-dismissing notice from the harness (`notify`). */
+function NoticeRow({ notice }: { notice: Notice }): JSX.Element {
+  const dismiss = useStore((s) => s.dismissNotice)
+  useEffect(() => {
+    const t = setTimeout(() => dismiss(notice.id), 8000)
+    return () => clearTimeout(t)
+  }, [notice.id, dismiss])
+  const Icon = notice.kind === 'error' ? XCircle : notice.kind === 'warning' ? AlertTriangle : Info
+  return (
+    <div className={`notice ${notice.kind}`}>
+      <Icon size={14} />
+      <span className="notice-msg">{notice.message}</span>
+      <button className="notice-close" title="Dismiss" onClick={() => dismiss(notice.id)}>
+        <X size={12} />
+      </button>
     </div>
   )
 }
