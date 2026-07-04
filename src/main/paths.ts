@@ -33,21 +33,43 @@ export function augmentedPath(current: string | undefined): string {
  * `which`-style lookup of an executable by name across the augmented PATH.
  * Returns the absolute path to the first executable match, or null.
  */
+/**
+ * Try resolving a file path, appending common Windows extensions if the bare
+ * name doesn't exist as-is.
+ */
+async function tryResolve(base: string, name: string): Promise<string | null> {
+  const full = path.join(base, name)
+  try {
+    const st = await fs.stat(full)
+    if (st.isFile()) return full
+  } catch {
+    // not found — fall through
+  }
+  // Windows: try with common extensions
+  if (process.platform === 'win32') {
+    for (const ext of ['.cmd', '.bat', '.exe', '.ps1']) {
+      const withExt = full + ext
+      try {
+        const st = await fs.stat(withExt)
+        if (st.isFile()) return withExt
+      } catch { /* keep looking */ }
+    }
+  }
+  return null
+}
+
 export async function whichInPath(name: string): Promise<string | null> {
   const sep = path.delimiter
   const dirs = augmentedPath(process.env.PATH).split(sep).filter(Boolean)
   for (const dir of dirs) {
-    const full = path.join(dir, name)
+    const resolved = await tryResolve(dir, name)
+    if (!resolved) continue
+    if (process.platform === 'win32') return resolved
+    // Unix: verify executable bit
     try {
-      const st = await fs.stat(full)
-      if (st.isFile()) {
-        // Windows: no real executable bit; trust the file exists + has a known extension
-        if (process.platform === 'win32') return full
-        if ((st.mode & 0o100) !== 0) return full
-      }
-    } catch {
-      // not here; keep looking
-    }
+      const st = await fs.stat(resolved)
+      if ((st.mode & 0o100) !== 0) return resolved
+    } catch { /* not executable; keep looking */ }
   }
   return null
 }
