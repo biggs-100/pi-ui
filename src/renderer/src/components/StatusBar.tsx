@@ -29,12 +29,12 @@ export function StatusBar(): JSX.Element {
   const dotClass = status === 'online' ? 'online' : status === 'ready' ? 'ready' : 'offline'
   const label =
     status === 'online'
-      ? 'BACKEND ONLINE'
+      ? 'BACKEND CONECTADO'
       : status === 'ready'
-        ? 'HARNESS READY'
+        ? 'HARNESS LISTO'
         : status === 'offline'
-          ? 'BACKEND OFFLINE'
-          : 'NO BACKEND'
+          ? 'BACKEND DESCONECTADO'
+          : 'SIN BACKEND'
 
   return (
     <footer className="statusbar">
@@ -46,18 +46,18 @@ export function StatusBar(): JSX.Element {
       ) : (
         <span>
           <span className={`dot ${liveCount > 0 ? 'online' : 'offline'}`} />
-          {liveCount}/{allHealth.length || 0} HARNESSES LIVE
+          {liveCount}/{allHealth.length || 0} HARNESSES ACTIVOS
         </span>
       )}
       {health?.online && health.models[0] && <span className="muted">{health.models[0]}</span>}
       {runningCount > 0 && (
-        <span className="copper">● {runningCount > 1 ? `${runningCount} RUNNING` : 'RUNNING'}</span>
+        <span className="copper">● {runningCount > 1 ? `${runningCount} EJECUTANDO` : 'EJECUTANDO'}</span>
       )}
-      {reconnecting && <span className="muted">reconnecting…</span>}
+      {reconnecting && <span className="muted">reconectando…</span>}
       <span className="spacer" />
       {session && (
         <>
-          <span>SESSION TOTAL: {fmt(total)} tok</span>
+          <span>TOTAL SESIÓN: {fmt(total)} tok</span>
           {ctxWindow && (
             <span className="ctx-gauge">
               CTX

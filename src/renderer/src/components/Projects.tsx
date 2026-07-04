@@ -82,12 +82,12 @@ export function Projects(): JSX.Element {
       onDrop={handleDrop}
     >
       <div className="pane-header">
-        <span className="label-tech">Projects</span>
+        <span className="label-tech">Proyectos</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
           <button
             className="icon-btn"
             style={{ width: 26, height: 26 }}
-            title="Add project folder"
+            title="Añadir carpeta de proyecto"
             onClick={() => void browseAndAddProject()}
           >
             <FolderPlus size={15} />
@@ -96,7 +96,7 @@ export function Projects(): JSX.Element {
             <button
               className="icon-btn"
               style={{ width: 26, height: 26 }}
-              title={selectionMode ? 'Cancel selection' : 'Select projects to archive'}
+              title={selectionMode ? 'Cancelar selección' : 'Seleccionar proyectos para archivar'}
               onClick={toggleSelectionMode}
             >
               {selectionMode ? <X size={15} /> : <CheckSquare size={15} />}
@@ -109,7 +109,7 @@ export function Projects(): JSX.Element {
         {dragOver && (
           <div className="drop-zone-overlay">
             <FolderPlus size={28} />
-            <span>Drop folder to add project</span>
+            <span>Soltá la carpeta para añadir el proyecto</span>
           </div>
         )}
 
@@ -118,7 +118,7 @@ export function Projects(): JSX.Element {
             <div>
               <Folder size={28} className="muted" />
               <p className="muted" style={{ marginTop: 10 }}>
-                No conversations found for this harness yet.
+                Aún no se encontraron conversaciones para este harness.
               </p>
             </div>
           </div>
@@ -135,14 +135,14 @@ export function Projects(): JSX.Element {
 
       {selectionMode && (
         <div className="select-bar">
-          <span className="muted">{selectedForArchive.length} selected</span>
+          <span className="muted">{selectedForArchive.length} seleccionados</span>
           <button
             className="btn primary"
             style={{ marginLeft: 'auto', padding: '5px 12px' }}
             disabled={selectedForArchive.length === 0}
             onClick={archiveSelected}
           >
-            <Archive size={12} /> Archive
+            <Archive size={12} /> Archivar
           </button>
         </div>
       )}
@@ -153,7 +153,7 @@ export function Projects(): JSX.Element {
         </div>
         <div>
           <div className="label-tech" style={{ fontSize: 9 }}>
-            Active Harness
+            Harness Activo
           </div>
           <div style={{ color: 'var(--text-0)', fontSize: 13 }}>{harness?.label ?? '—'}</div>
         </div>
@@ -222,7 +222,7 @@ function ProjectRow({
           {p.name}
         </span>
         {projectRunning && (
-          <span className="run-badge" title="Agent is working in this project">
+          <span className="run-badge" title="El agente está trabajando en este proyecto">
             <ForgeAnvil size={18} />
           </span>
         )}
@@ -230,7 +230,7 @@ function ProjectRow({
           <div className="project-actions">
             <button
               className="restore-btn"
-              title="Restore from archive"
+              title="Restaurar del archivo"
               onClick={(e) => {
                 e.stopPropagation()
                 unarchive(key)
@@ -240,7 +240,7 @@ function ProjectRow({
             </button>
             <button
               className="restore-btn"
-              title="Delete from list"
+              title="Eliminar de la lista"
               onClick={(e) => {
                 e.stopPropagation()
                 void deleteProject(p.encoded)
@@ -253,7 +253,7 @@ function ProjectRow({
           <div className="project-actions">
             <button
               className="new-chat-btn"
-              title="Start new chat"
+              title="Iniciar nuevo chat"
               onClick={(e) => {
                 e.stopPropagation()
                 void startNewChat(p.cwd)
@@ -280,7 +280,7 @@ function ProjectRow({
               <span className="stitle" title={sess.title}>
                 {sess.title}
               </span>
-              {sessionRunning && <span className="run-dot" title="Working" />}
+              {sessionRunning && <span className="run-dot" title="Trabajando" />}
               {sess.totalTokens > 0 && <span className="stoks">{formatTokens(sess.totalTokens)}</span>}
             </div>
           )
@@ -302,7 +302,7 @@ function ArchiveSection({
       <div className="archive-header" onClick={() => setOpen(!open)}>
         {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
         <Archive size={13} />
-        <span className="label-tech">Archive</span>
+        <span className="label-tech">Archivo</span>
         <span className="pmeta">{projects.length}</span>
       </div>
       {open &&

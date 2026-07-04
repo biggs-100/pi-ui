@@ -29,10 +29,10 @@ export function AddHarnessModal(): JSX.Element {
   return (
     <div className="modal-backdrop" onClick={() => setAddModal(false)}>
       <div className="modal wide" onClick={(e) => e.stopPropagation()}>
-        <h3>Add a Harness</h3>
+        <h3>Añadir un Harness</h3>
 
         <div className="label-tech" style={{ marginBottom: 8 }}>
-          Install
+          Instalar
         </div>
         <div className="install-grid">
           {presets.map((p) => (
@@ -41,32 +41,32 @@ export function AddHarnessModal(): JSX.Element {
         </div>
 
         <div className="label-tech" style={{ margin: '20px 0 8px' }}>
-          Register existing
+          Registrar existente
         </div>
         <div className="field">
-          <label className="label-tech">Label</label>
-          <input value={label} placeholder="e.g. Research" onChange={(e) => setLabel(e.target.value)} />
+          <label className="label-tech">Etiqueta</label>
+          <input value={label} placeholder="ej. Investigación" onChange={(e) => setLabel(e.target.value)} />
         </div>
         <div className="field">
-          <label className="label-tech">Agent directory</label>
+          <label className="label-tech">Directorio del agente</label>
           <input
             value={agentDir}
-            placeholder="~/.my-harness/agent"
+            placeholder="~/.mi-harness/agent"
             onChange={(e) => setAgentDir(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && void submit()}
           />
           <div className="muted" style={{ fontSize: 10.5, marginTop: 6 }}>
-            Path to a pi/forge-style <code>agent/</code> dir containing <code>sessions/</code>.{' '}
-            <code>models.json</code> is optional (base pi uses a hosted/login backend). Harnesses
-            under your home dir are auto-detected on launch.
+            Ruta a un directorio <code>agent/</code> estilo pi/forge que contenga <code>sessions/</code>.{' '}
+            <code>models.json</code> es opcional (pi base usa un backend alojado/login). Los harnesses
+            en tu directorio personal se detectan automáticamente al iniciar.
           </div>
         </div>
         <div className="modal-actions">
           <button className="btn" onClick={() => setAddModal(false)}>
-            Close
+            Cerrar
           </button>
           <button className="btn primary" disabled={busy} onClick={() => void submit()}>
-            {busy ? 'Adding…' : 'Register'}
+            {busy ? 'Añadiendo…' : 'Registrar'}
           </button>
         </div>
       </div>
@@ -88,21 +88,21 @@ function InstallCard({ status }: { status: HarnessPresetStatus }): JSX.Element {
   }, [log?.lines.length])
 
   const action = (() => {
-    if (!installed) return { text: 'Install', run: () => void installHarness(preset.id, 'install') }
+    if (!installed) return { text: 'Instalar', run: () => void installHarness(preset.id, 'install') }
     if (!registered)
       return {
-        text: 'Register',
+        text: 'Registrar',
         run: () => void addHarness({ label: preset.label, agentDir: preset.agentDir })
       }
-    return { text: 'Update', run: () => void installHarness(preset.id, 'update') }
+    return { text: 'Actualizar', run: () => void installHarness(preset.id, 'update') }
   })()
 
   return (
     <div className="install-card">
       <div className="install-card-head">
         <h4>{preset.label}</h4>
-        {installed && registered && <span className="install-badge">Installed ✓</span>}
-        {installed && !registered && <span className="install-badge muted-badge">On disk</span>}
+        {installed && registered && <span className="install-badge">Instalado ✓</span>}
+        {installed && !registered && <span className="install-badge muted-badge">En disco</span>}
       </div>
       <p className="muted" style={{ fontSize: 11, margin: '4px 0 8px' }}>
         {preset.description}
@@ -114,11 +114,11 @@ function InstallCard({ status }: { status: HarnessPresetStatus }): JSX.Element {
           </span>
         ))}
       </div>
-      <code className="install-cmd" title="Command that will run">
+      <code className="install-cmd" title="Comando que se ejecutará">
         {action.text === 'Update' ? preset.updateCommand : preset.installCommand}
       </code>
       <button className="btn primary install-btn" disabled={running} onClick={action.run}>
-        {running ? 'Running…' : action.text}
+        {running ? 'Ejecutando…' : action.text}
       </button>
       {log && log.lines.length > 0 && (
         <pre ref={logRef} className={`install-log ${log.status}`}>

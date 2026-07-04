@@ -40,9 +40,9 @@ export function Dashboard(): JSX.Element {
 
   return (
     <div className="dashboard">
-      <h1 style={{ fontSize: 30, margin: 0, color: 'var(--copper-bright)' }}>The Workshop</h1>
+      <h1 style={{ fontSize: 30, margin: 0, color: 'var(--copper-bright)' }}>El Taller</h1>
       <p className="muted" style={{ marginTop: 4 }}>
-        Overview across {harnesses.length} registered {harnesses.length === 1 ? 'harness' : 'harnesses'}.
+        Resumen de {harnesses.length} {harnesses.length === 1 ? 'harness' : 'harnesses'} registrados.
       </p>
       <div className="dash-grid">
         {stats.map((s) => {
@@ -68,14 +68,14 @@ export function Dashboard(): JSX.Element {
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 20, margin: '16px 0' }}>
-                <Metric icon={<FolderGit2 size={13} />} label="projects" value={s.projects} />
-                <Metric icon={<MessagesSquare size={13} />} label="sessions" value={s.sessions} />
+                <Metric icon={<FolderGit2 size={13} />} label="proyectos" value={s.projects} />
+                <Metric icon={<MessagesSquare size={13} />} label="sesiones" value={s.sessions} />
                 <Metric label="tokens" value={fmt(s.tokens)} />
               </div>
               <div className="label-tech" style={{ marginBottom: 6 }}>
-                Recent
+                Reciente
               </div>
-              {s.recent.length === 0 && <div className="muted">No sessions yet.</div>}
+              {s.recent.length === 0 && <div className="muted">Aún no hay sesiones.</div>}
               {s.recent.map((r) => (
                 <div
                   key={r.path}
@@ -96,7 +96,7 @@ export function Dashboard(): JSX.Element {
                 style={{ marginTop: 14, width: '100%' }}
                 onClick={() => setView({ harnessId: s.id })}
               >
-                Open workspace
+                Abrir espacio de trabajo
               </button>
             </div>
           )

@@ -20,65 +20,65 @@ export function SettingsModal(): JSX.Element | null {
     <div className="modal-backdrop" onClick={() => setOpen(false)}>
       <div className="modal settings-modal" onClick={(e) => e.stopPropagation()}>
         <header className="settings-head">
-          <h3>Settings</h3>
-          <button className="icon-btn" title="Close" onClick={() => setOpen(false)}>
+          <h3>Configuración</h3>
+          <button className="icon-btn" title="Cerrar" onClick={() => setOpen(false)}>
             <X size={18} />
           </button>
         </header>
 
         <div className="settings-body">
           <section className="settings-group">
-            <div className="settings-group-title">Appearance</div>
+            <div className="settings-group-title">Apariencia</div>
 
-            <SettingRow label="Theme">
+            <SettingRow label="Tema">
               <Segmented
                 value={theme}
                 onChange={(v) => setTheme(v as 'dark' | 'light')}
                 options={[
-                  { value: 'dark', label: 'Dark' },
-                  { value: 'light', label: 'Light' }
+                  { value: 'dark', label: 'Oscuro' },
+                  { value: 'light', label: 'Claro' }
                 ]}
               />
             </SettingRow>
 
-            <SettingRow label="Message spacing">
+            <SettingRow label="Espaciado de mensajes">
               <select
                 value={messageSpacing}
                 onChange={(e) => updateSettings({ messageSpacing: e.target.value as 'compact' | 'cozy' | 'comfortable' })}
               >
-                <option value="compact">Compact</option>
-                <option value="cozy">Cozy</option>
-                <option value="comfortable">Comfortable</option>
+                <option value="compact">Compacto</option>
+                <option value="cozy">Cómodo</option>
+                <option value="comfortable">Espacioso</option>
               </select>
             </SettingRow>
 
-            <SettingRow label="Reduce motion" desc="Stop the forge hammer animation">
+            <SettingRow label="Reducir animación" desc="Detener la animación del martillo de forja">
               <Toggle on={reduceMotion} onChange={(v) => updateSettings({ reduceMotion: v })} />
             </SettingRow>
           </section>
 
           <section className="settings-group">
-            <div className="settings-group-title">Conversation</div>
+            <div className="settings-group-title">Conversación</div>
 
-            <SettingRow label="Show model thinking" desc="Reasoning shown in a collapsible lane">
+            <SettingRow label="Mostrar pensamiento del modelo" desc="Razonamiento mostrado en un carril colapsable">
               <Toggle on={showThinking} onChange={(v) => updateSettings({ showThinking: v })} />
             </SettingRow>
 
-            <SettingRow label="Show tool calls" desc="Bash, Read/Write, and other tool invocations">
+            <SettingRow label="Mostrar invocaciones de herramientas" desc="Invocaciones de Bash, Lectura/Escritura y otras herramientas">
               <Toggle on={showTools} onChange={(v) => updateSettings({ showTools: v })} />
             </SettingRow>
 
-            <SettingRow label="Show tool results" desc="Output returned by each tool">
+            <SettingRow label="Mostrar resultados de herramientas" desc="Salida devuelta por cada herramienta">
               <Toggle on={showToolResults} onChange={(v) => updateSettings({ showToolResults: v })} />
             </SettingRow>
           </section>
 
           <section className="settings-group">
-            <div className="settings-group-title">Behavior</div>
+            <div className="settings-group-title">Comportamiento</div>
 
             <SettingRow
-              label="Auto-attach viewed file"
-              desc="Reference the open file in new prompts by default"
+              label="Adjuntar archivo visto automáticamente"
+              desc="Referenciar el archivo abierto en nuevos mensajes por defecto"
             >
               <Toggle on={autoAttachFile} onChange={(v) => updateSettings({ autoAttachFile: v })} />
             </SettingRow>
@@ -87,7 +87,7 @@ export function SettingsModal(): JSX.Element | null {
 
         <div className="modal-actions">
           <button className="btn primary" onClick={() => setOpen(false)}>
-            Done
+            Listo
           </button>
         </div>
       </div>

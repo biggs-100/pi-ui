@@ -52,7 +52,7 @@ function FileBrowser(): JSX.Element {
     <div className="pane">
       <div className="pane-header">
         <Files size={14} className="copper" />
-        <span className="label-tech">Files</span>
+        <span className="label-tech">Archivos</span>
         {selectedCwd && (
           <span
             className="muted"
@@ -65,7 +65,7 @@ function FileBrowser(): JSX.Element {
         <button
           className="icon-btn dock-toggle"
           style={{ marginLeft: selectedCwd ? 6 : 'auto', width: 24, height: 24 }}
-          title={inspectorDock === 'right' ? 'Dock panel to bottom' : 'Dock panel to right'}
+          title={inspectorDock === 'right' ? 'Acoplar panel abajo' : 'Acoplar panel a la derecha'}
           onClick={toggleInspectorDock}
         >
           {inspectorDock === 'right' ? <PanelBottom size={13} /> : <PanelRight size={13} />}
@@ -73,7 +73,7 @@ function FileBrowser(): JSX.Element {
         <button
           className="icon-btn"
           style={{ width: 24, height: 24 }}
-          title="Refresh files"
+          title="Actualizar archivos"
           disabled={!selectedCwd}
           onClick={() => void refreshFiles()}
         >
@@ -83,7 +83,7 @@ function FileBrowser(): JSX.Element {
       <div className="pane-body">
         {fileTree.length === 0 ? (
           <div className="empty" style={{ height: 'auto', padding: 30 }}>
-            <span className="muted">No project selected</span>
+            <span className="muted">Ningún proyecto seleccionado</span>
           </div>
         ) : (
           <div className="filetree">
@@ -143,13 +143,13 @@ function Preview(): JSX.Element {
       <div className="pane-header">
         <Eye size={14} className="copper" />
         <span className="preview-header">
-          {selectedFile ? `Preview — ${selectedFile.split('/').pop()}` : 'Preview'}
+          {selectedFile ? `Vista previa — ${selectedFile.split('/').pop()}` : 'Vista previa'}
         </span>
       </div>
       <div className="preview-body">
         {!fileContent ? (
           <div className="empty" style={{ height: '100%' }}>
-            <span className="muted">Select a file to preview</span>
+            <span className="muted">Seleccioná un archivo para previsualizar</span>
           </div>
         ) : fileContent.kind === 'markdown' ? (
           <MarkdownView source={fileContent.content} />
@@ -159,12 +159,12 @@ function Preview(): JSX.Element {
           <CodeView code={fileContent.content} language={fileContent.language} />
         ) : (
           <div className="empty" style={{ height: '100%' }}>
-            <span className="muted">Binary file — no preview</span>
+            <span className="muted">Archivo binario — sin vista previa</span>
           </div>
         )}
         {fileContent?.truncated && (
           <div className="muted" style={{ padding: '8px 16px', fontSize: 11 }}>
-            ⚠ File truncated for preview.
+            ⚠ Archivo truncado para la vista previa.
           </div>
         )}
       </div>

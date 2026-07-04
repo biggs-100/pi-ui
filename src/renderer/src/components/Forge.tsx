@@ -51,8 +51,8 @@ export function Forge(): JSX.Element {
         <div className="empty">
           <div>
             <Flame className="glyph" />
-            <h2>The forge is cold</h2>
-            <p>Select a conversation from a project, or start a new one.</p>
+            <h2>La forja está fría</h2>
+            <p>Seleccioná una conversación de un proyecto, o iniciá una nueva.</p>
           </div>
         </div>
       </div>
@@ -68,14 +68,14 @@ export function Forge(): JSX.Element {
       <div className="pane forge">
         <div className="pane-header">
           <BallPeenHammer size={14} className="copper" />
-          <span className="label-tech">Forge — New Session</span>
+          <span className="label-tech">Forja — Nueva Sesión</span>
         </div>
         <div className="pane-body">
           <div className="empty">
             <div>
               <Flame className="glyph" />
-              <h2>Ready to forge</h2>
-              <p>Type a prompt below to start a new conversation in this project.</p>
+              <h2>Listo para forjar</h2>
+              <p>Escribí un mensaje abajo para iniciar una nueva conversación en este proyecto.</p>
             </div>
           </div>
         </div>
@@ -88,12 +88,12 @@ export function Forge(): JSX.Element {
     <div className="pane forge">
       <div className="pane-header">
         <BallPeenHammer size={14} className="copper" />
-        <span className="label-tech">{selectedSessionPath ? 'Forge — Session' : 'Forge — New Session'}</span>
+        <span className="label-tech">{selectedSessionPath ? 'Forja — Sesión' : 'Forja — Nueva Sesión'}</span>
       </div>
       <div className="pane-body">
         {loading && !session ? (
           <div className="empty">
-            <span className="muted">Loading session…</span>
+            <span className="muted">Cargando sesión…</span>
           </div>
         ) : (
           <div className={`thread spacing-${messageSpacing}`}>
@@ -148,14 +148,14 @@ function WorkingRow({
   }, [])
   const elapsed = Math.max(0, Math.floor((now - startedAt) / 1000))
   const label = waiting
-    ? 'Waiting for you'
+    ? 'Esperando tu respuesta'
     : status === 'finalizing'
-      ? 'Finishing'
+      ? 'Finalizando'
       : currentTool
-        ? `Running ${currentTool}`
+        ? `Ejecutando ${currentTool}`
         : thinking && !text
-          ? 'Thinking'
-          : 'Forging'
+          ? 'Pensando'
+          : 'Forjando'
 
   return (
     <div className="msg assistant working">
@@ -169,7 +169,7 @@ function WorkingRow({
         </div>
         {thinking && !text && (
           <details className="thinking" open>
-            <summary>✦ thinking</summary>
+            <summary>✦ pensamiento</summary>
             <div className="content">{thinking}</div>
           </details>
         )}
@@ -202,7 +202,7 @@ function SettledAssistant({ text, thinking }: { text: string; thinking: string }
       <div className="body">
         {thinking && showThinking && !text && (
           <details className="thinking">
-            <summary>✦ thinking</summary>
+            <summary>✦ pensamiento</summary>
             <div className="content">{thinking}</div>
           </details>
         )}
@@ -298,13 +298,13 @@ function InteractivePrompt({ prompt }: { prompt: PendingPrompt }): JSX.Element {
                   className="btn primary"
                   onClick={() => void answer(prompt.id, { confirmed: true })}
                 >
-                  Confirm
+                  Confirmar
                 </button>
                 <button
                   className="btn"
                   onClick={() => void answer(prompt.id, { confirmed: false })}
                 >
-                  Decline
+                  Rechazar
                 </button>
               </>
             ) : req.method === 'input' || req.method === 'editor' ? (
@@ -313,15 +313,15 @@ function InteractivePrompt({ prompt }: { prompt: PendingPrompt }): JSX.Element {
                   className="btn primary"
                   onClick={() => void answer(prompt.id, { value: draft })}
                 >
-                  Submit
+                  Enviar
                 </button>
                 <button className="btn ghost" onClick={cancel}>
-                  Cancel
+                  Cancelar
                 </button>
               </>
             ) : (
               <button className="btn ghost" onClick={cancel}>
-                Cancel
+                Cancelar
               </button>
             )}
           </div>
@@ -343,7 +343,7 @@ function NoticeRow({ notice }: { notice: Notice }): JSX.Element {
     <div className={`notice ${notice.kind}`}>
       <Icon size={14} />
       <span className="notice-msg">{notice.message}</span>
-      <button className="notice-close" title="Dismiss" onClick={() => dismiss(notice.id)}>
+      <button className="notice-close" title="Descartar" onClick={() => dismiss(notice.id)}>
         <X size={12} />
       </button>
     </div>
@@ -384,7 +384,7 @@ function Message({ m }: { m: ThreadMessage }): JSX.Element | null {
     return (
       <details className={`toolblock ${m.toolResult?.isError ? 'err' : ''}`}>
         <summary>
-          ▸ result — {m.toolResult?.toolName ?? 'tool'} {m.toolResult?.isError ? '(error)' : ''}
+          ▸ resultado — {m.toolResult?.toolName ?? 'tool'} {m.toolResult?.isError ? '(error)' : ''}
         </summary>
         <div className="content">
           <div className="toolout">{truncate(m.toolResult?.text ?? '', 6000)}</div>
@@ -406,7 +406,7 @@ function Message({ m }: { m: ThreadMessage }): JSX.Element | null {
       <div className="body">
         {showThinkingBlock && (
           <details className="thinking">
-            <summary>✦ thinking</summary>
+            <summary>✦ pensamiento</summary>
             <div className="content">{m.thinking}</div>
           </details>
         )}
@@ -429,9 +429,9 @@ function Message({ m }: { m: ThreadMessage }): JSX.Element | null {
 /** Compact per-response stats line: output tokens, throughput, model. */
 function MsgStats({ m }: { m: ThreadMessage }): JSX.Element | null {
   const parts: string[] = []
-  if (m.outputTokens) parts.push(`${fmtTok(m.outputTokens)} out`)
+  if (m.outputTokens) parts.push(`${fmtTok(m.outputTokens)} salida`)
   if (m.tps) parts.push(`${m.tps >= 100 ? Math.round(m.tps) : m.tps.toFixed(1)} tok/s`)
-  if (m.usage?.cacheRead) parts.push(`${fmtTok(m.usage.cacheRead)} cached`)
+  if (m.usage?.cacheRead) parts.push(`${fmtTok(m.usage.cacheRead)} en caché`)
   if (m.model) parts.push(m.model)
   if (parts.length === 0) return null
   return <div className="msg-stats">{parts.join('  ·  ')}</div>
@@ -487,18 +487,18 @@ function Composer(): JSX.Element {
           {attachViewedFile ? (
             <>
               <span>
-                Referencing <span className="copper">{basename(selectedFile as string)}</span> — the agent
-                will know you mean this file
+                Haciendo referencia a <span className="copper">{basename(selectedFile as string)}</span> — el
+                agente sabrá que te referís a este archivo
               </span>
-              <button className="attach-toggle" title="Don't attach" onClick={() => setAttachViewedFile(false)}>
+              <button className="attach-toggle" title="No adjuntar" onClick={() => setAttachViewedFile(false)}>
                 <X size={12} />
               </button>
             </>
           ) : (
             <>
-              <span className="muted">{basename(selectedFile as string)} not attached</span>
+              <span className="muted">{basename(selectedFile as string)} no adjunto</span>
               <button className="attach-toggle" onClick={() => setAttachViewedFile(true)}>
-                attach
+                adjuntar
               </button>
             </>
           )}
@@ -508,7 +508,7 @@ function Composer(): JSX.Element {
         <textarea
           ref={taRef}
           rows={1}
-          placeholder={canSend ? 'Fire up the forge…' : 'Viewing only — no RPC launcher for this harness'}
+          placeholder={canSend ? 'Encendé la forja…' : 'Solo vista — no hay lanzador RPC para este harness'}
           value={text}
           disabled={!canSend}
           onChange={(e) => setText(e.target.value)}
@@ -520,18 +520,18 @@ function Composer(): JSX.Element {
           }}
         />
         {running ? (
-          <button className="send-btn" title="Stop" onClick={() => void abort()}>
+          <button className="send-btn" title="Detener" onClick={() => void abort()}>
             <Square size={15} />
           </button>
         ) : (
-          <button className="send-btn" title="Send" disabled={!canSend || !text.trim()} onClick={submit}>
+          <button className="send-btn" title="Enviar" disabled={!canSend || !text.trim()} onClick={submit}>
             <Send size={16} />
           </button>
         )}
       </div>
       {!canSend && selectedCwd && (
         <div className="note">
-          This harness has no resolved CLI launcher, so prompts are disabled. Browsing and tracking still work.
+          Este harness no tiene un lanzador CLI resuelto, por lo que los mensajes están deshabilitados. La navegación y el seguimiento aún funcionan.
         </div>
       )}
     </div>
@@ -550,7 +550,7 @@ function formatArgs(args: unknown): string {
 }
 
 function truncate(s: string, n: number): string {
-  return s.length > n ? s.slice(0, n) + `\n… (${s.length - n} more chars)` : s
+  return s.length > n ? s.slice(0, n) + `\n… (${s.length - n} caracteres más)` : s
 }
 
 function basename(p: string): string {
