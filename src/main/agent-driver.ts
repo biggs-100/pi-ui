@@ -1,4 +1,5 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+import os from 'node:os'
 import readline from 'node:readline'
 import path from 'node:path'
 import { existsSync } from 'node:fs'
@@ -62,14 +63,22 @@ export class AgentDriver {
     // ourselves (harmless for base pi where it equals the default).
     let child: ChildProcessWithoutNullStreams
     try {
-      child = spawn(harness.cli, args, {
+      // Windows: .cmd/.bat files must be spawned via cmd.exe — Node's built-in
+      // fallback can fail with EINVAL or ENOENT when using absolute paths.
+      const isWindowsCmd = process.platform === 'win32' && /\.(cmd|bat)$/i.test(harness.cli)
+      const spawnCmd = isWindowsCmd ? 'cmd.exe' : harness.cli
+      const spawnArgs = isWindowsCmd
+        ? ['/d', '/s', '/c', harness.cli, ...args]
+        : args
+      child = spawn(spawnCmd, spawnArgs, {
         cwd,
         env: {
           ...process.env,
           ...agentDirEnv(harness),
           PATH: augmentedPath(process.env.PATH)
         },
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
+        windowsVerbatimArguments: isWindowsCmd
       })
     } catch (err) {
       return { ok: false, reason: err instanceof Error ? err.message : 'spawn failed' }

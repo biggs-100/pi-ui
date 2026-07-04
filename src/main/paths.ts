@@ -39,13 +39,8 @@ export function augmentedPath(current: string | undefined): string {
  */
 async function tryResolve(base: string, name: string): Promise<string | null> {
   const full = path.join(base, name)
-  try {
-    const st = await fs.stat(full)
-    if (st.isFile()) return full
-  } catch {
-    // not found — fall through
-  }
-  // Windows: try with common extensions
+  // Windows: prefer files with executable extensions over bare files (shebangs
+  // or Node wrappers without .cmd/.exe won't work with child_process.spawn).
   if (process.platform === 'win32') {
     for (const ext of ['.cmd', '.bat', '.exe', '.ps1']) {
       const withExt = full + ext
@@ -54,6 +49,13 @@ async function tryResolve(base: string, name: string): Promise<string | null> {
         if (st.isFile()) return withExt
       } catch { /* keep looking */ }
     }
+  }
+  // No extension match on Windows, or Unix — check bare name
+  try {
+    const st = await fs.stat(full)
+    if (st.isFile()) return full
+  } catch {
+    // not found
   }
   return null
 }
