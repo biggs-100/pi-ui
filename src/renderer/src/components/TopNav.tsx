@@ -16,12 +16,12 @@ export function TopNav(): JSX.Element {
 
   return (
     <header className="topnav">
-      <span className="brand">Hephaestus</span>
+      <span className="brand">Hefesto</span>
       {/* Sidebar toggle — anchored near the left sidebar it controls */}
       {view !== 'dashboard' && (
         <button
           className="zen-toggle"
-          title={zen ? 'Show sidebar' : 'Hide sidebar'}
+          title={zen ? 'Mostrar barra lateral' : 'Ocultar barra lateral'}
           onClick={toggleZen}
         >
           {zen ? <PanelLeft size={17} /> : <PanelLeftClose size={17} />}
@@ -32,7 +32,7 @@ export function TopNav(): JSX.Element {
           className={`nav-tab ${view === 'dashboard' ? 'active' : ''}`}
           onClick={() => setView('dashboard')}
         >
-          Dashboard
+          Panel
         </button>
         {harnesses.map((h) => (
           <button
@@ -50,7 +50,7 @@ export function TopNav(): JSX.Element {
             {h.label}
             <span
               className="tab-close"
-              title="Remove harness"
+              title="Eliminar harness"
               onClick={(e) => {
                 e.stopPropagation()
                 void removeHarness(h.id)
@@ -60,15 +60,15 @@ export function TopNav(): JSX.Element {
             </span>
           </button>
         ))}
-        <button className="nav-add" title="Register harness" onClick={() => setAddModal(true)}>
+        <button className="nav-add" title="Registrar harness" onClick={() => setAddModal(true)}>
           <Plus size={16} />
         </button>
       </nav>
       <div className="nav-right">
-        <button className="icon-btn" title="Toggle theme" onClick={toggleTheme}>
+        <button className="icon-btn" title="Cambiar tema" onClick={toggleTheme}>
           {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
         </button>
-        <button className="icon-btn" title="Settings" onClick={() => useStore.getState().setSettingsModalOpen(true)}>
+        <button className="icon-btn" title="Configuración" onClick={() => useStore.getState().setSettingsModalOpen(true)}>
           <Settings size={17} />
         </button>
       </div>

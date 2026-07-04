@@ -1,7 +1,7 @@
 {
-  "name": "hephaestus",
+  "name": "hefesto",
   "version": "0.1.0",
-  "description": "A multi-harness workspace for local LLM agents — Forge & Folio.",
+  "description": "Una interfaz gráfica multi-harness para agentes LLM locales — Forja y Taller.",
   "type": "module",
   "main": "./out/main/index.js",
   "author": "Ellian-Eorwyn",
@@ -19,8 +19,8 @@
     "dist:linux": "npm run build && electron-builder --linux"
   },
   "build": {
-    "appId": "com.ellianeorwyn.hephaestus",
-    "productName": "Hephaestus",
+    "appId": "com.ellianeorwyn.hefesto",
+    "productName": "Hefesto",
     "mac": {
       "target": [
         "dmg",
