@@ -375,6 +375,22 @@ button:focus-visible {
   color: var(--text-faint);
   white-space: nowrap;
 }
+.session-row .session-del-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--text-faint);
+  opacity: 0;
+  transition: opacity 0.12s;
+  flex-shrink: 0;
+}
+.session-row:hover .session-del-btn {
+  opacity: 1;
+}
+.session-row .session-del-btn:hover {
+  color: var(--red);
+}
 
 .project-row.checked {
   background: var(--bg-3);

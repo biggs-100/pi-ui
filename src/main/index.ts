@@ -154,6 +154,13 @@ function registerIpc(): void {
     await fs.rm(dir, { recursive: true, force: true })
   })
 
+  ipcMain.handle(IPC.removeSession, async (_e, input: { harnessId: string; sessionPath: string }) => {
+    const h = registry.get(input.harnessId)
+    if (!h) throw new Error(`Unknown harness ${input.harnessId}`)
+    await fs.rm(input.sessionPath, { force: true })
+    return sessions.listProjects(h.agentDir)
+  })
+
   ipcMain.handle(IPC.checkBackend, async (_e, harnessId: string) => {
     const h = registry.get(harnessId)
     if (!h) throw new Error(`Unknown harness ${harnessId}`)

@@ -370,6 +370,7 @@ export interface HephApi {
   browseFolder(): Promise<string | null>
   addProject(input: { harnessId: string; cwd: string }): Promise<ProjectSummary[]>
   removeProject(input: { harnessId: string; encoded: string }): Promise<void>
+  removeSession(input: { harnessId: string; sessionPath: string }): Promise<ProjectSummary[]>
 
   checkBackend(harnessId: string): Promise<BackendHealth>
 

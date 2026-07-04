@@ -18,6 +18,7 @@ export const IPC = {
   browseFolder: 'dialog:browseFolder',
   addProject: 'session:addProject',
   removeProject: 'session:removeProject',
+  removeSession: 'session:removeSession',
 
   checkBackend: 'backend:check',
 

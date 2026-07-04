@@ -183,6 +183,7 @@ function ProjectRow({
   const toggleForArchive = useStore((s) => s.toggleForArchive)
   const unarchive = useStore((s) => s.unarchive)
   const deleteProject = useStore((s) => s.deleteProject)
+  const deleteSession = useStore((s) => s.deleteSession)
 
   const runs = useStore((s) => s.runs)
   const projectRunning = Object.values(runs).some(
@@ -294,6 +295,18 @@ function ProjectRow({
               </span>
               {sessionRunning && <span className="run-dot" title="Trabajando" />}
               {sess.totalTokens > 0 && <span className="stoks">{formatTokens(sess.totalTokens)}</span>}
+              <button
+                className="session-del-btn"
+                title="Eliminar esta sesión del disco"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (window.confirm(`¿Eliminar "${sess.title}"?`)) {
+                    harnessId && void deleteSession(harnessId, sess.path)
+                  }
+                }}
+              >
+                <Trash2 size={11} />
+              </button>
             </div>
           )
         })}

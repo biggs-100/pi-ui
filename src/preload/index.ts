@@ -24,6 +24,7 @@ const api: HephApi = {
   browseFolder: () => ipcRenderer.invoke(IPC.browseFolder),
   addProject: (input) => ipcRenderer.invoke(IPC.addProject, input),
   removeProject: (input) => ipcRenderer.invoke(IPC.removeProject, input),
+  removeSession: (input) => ipcRenderer.invoke(IPC.removeSession, input),
 
   checkBackend: (harnessId) => ipcRenderer.invoke(IPC.checkBackend, harnessId),
 

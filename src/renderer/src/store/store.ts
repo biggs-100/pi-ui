@@ -251,6 +251,7 @@ interface State {
   archiveSelected: () => void
   unarchive: (key: string) => void
   deleteProject: (encoded: string) => Promise<void>
+  deleteSession: (harnessId: string, sessionPath: string) => Promise<void>
   selectSession: (harnessId: string, path: string, cwd: string) => Promise<void>
   selectFile: (path: string) => Promise<void>
   refreshFiles: () => Promise<void>
@@ -566,6 +567,15 @@ export const useStore = create<State>((set, get) => {
     // Refresh the project list
     const projects = await heph.listProjects(harnessId)
     set({ projects, archived: nextArchived })
+  },
+
+  deleteSession: async (harnessId, sessionPath) => {
+    const projects = await heph.removeSession({ harnessId, sessionPath })
+    set({ projects })
+    // If the deleted session was selected, clear the inspector
+    if (get().selectedSessionPath === sessionPath) {
+      set({ selectedSessionPath: null, session: null })
+    }
   },
 
   selectSession: async (harnessId, path, cwd) => {
