@@ -251,6 +251,7 @@ function ProjectRow({
           </div>
         ) : (
           <div className="project-actions">
+            <span className="pmeta">{p.sessions.length}</span>
             <button
               className="new-chat-btn"
               title="Iniciar nuevo chat"
@@ -261,7 +262,18 @@ function ProjectRow({
             >
               <Plus size={14} />
             </button>
-            <span className="pmeta">{p.sessions.length}</span>
+            <button
+              className="restore-btn"
+              title="Eliminar proyecto — borra todas las sesiones del disco"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (window.confirm(`¿Eliminar "${p.name}"? Se borrarán todas las sesiones de este proyecto del disco.`)) {
+                  void deleteProject(p.encoded)
+                }
+              }}
+            >
+              <Trash2 size={13} />
+            </button>
           </div>
         )}
       </div>
