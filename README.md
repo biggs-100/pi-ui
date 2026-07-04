@@ -1,36 +1,36 @@
-# Hephaestus
+# Hefesto
 
-Hephaestus is a desktop GUI for managing and monitoring local LLM agents across multiple pi harness environments. Instead of interacting with your agents solely through the command line or log files, Hephaestus reads your existing workspace structure and provides a centralized interface for agent interaction and process monitoring.
+Hefesto es una interfaz gráfica de escritorio para gestionar y monitorear agentes LLM locales a través de múltiples entornos pi-harness. En lugar de interactuar con tus agentes únicamente desde la línea de comandos o archivos de log, Hefesto lee tu estructura de trabajo existente y proporciona una interfaz centralizada para la interacción con agentes y la supervisión de procesos.
 
-![Hephaestus Dashboard](assets/screenshot.png)
+![Dashboard de Hefesto](assets/screenshot.png)
 
-It is built to integrate natively with [Ellian-Eorwyn/pi-forge](https://github.com/Ellian-Eorwyn/pi-forge), but is entirely agnostic and can be used with any custom pi harness setup.
+Está construido para integrarse de forma nativa con [Ellian-Eorwyn/pi-forge](https://github.com/Ellian-Eorwyn/pi-forge), pero es completamente agnóstico y puede utilizarse con cualquier configuración personalizada de pi-harness.
 
-## Features
+## Funcionalidades
 
-- **Centralized Agent Management:** View all active agents, monitor their ongoing processes, and track their state from a single dashboard.
-- **Live File Viewing:** Instantly view and monitor the output of agent logs, configurations, and working files in real-time.
-- **Drag-and-Drop Workspaces:** Drag any folder directly from Finder or Explorer into the projects pane to instantly start chatting with an AI model about its contents and have it transform your files and data.
-- **Direct Harness Integration:** Works directly with your filesystem. It reads your existing harness configurations and agent data without requiring a separate database or configuration file.
-- **Harness Agnostic:** Out-of-the-box support for `pi-forge`, with the flexibility to connect to any custom pi harness installation.
-- **Cross-Platform:** Available for Windows, macOS, and Linux.
+- **Gestión centralizada de agentes:** Visualiza todos los agentes activos, monitorea sus procesos en curso y sigue su estado desde un único panel.
+- **Visor de archivos en vivo:** Visualiza y monitorea al instante la salida de logs, configuraciones y archivos de trabajo de los agentes en tiempo real.
+- **Espacios de trabajo por arrastrar y soltar:** Arrastra cualquier carpeta directamente desde el Finder o Explorer al panel de proyectos para comenzar a conversar con un modelo de IA sobre su contenido y transformar tus archivos y datos.
+- **Integración directa con harness:** Funciona directamente con tu sistema de archivos. Lee tus configuraciones de harness existentes y datos de agentes sin necesidad de una base de datos o archivo de configuración separado.
+- **Agnóstico de harness:** Soporte nativo para `pi-forge`, con la flexibilidad de conectarse a cualquier instalación personalizada de pi-harness.
+- **Multiplataforma:** Disponible para Windows, macOS y Linux.
 
-## Installation
+## Instalación
 
-You can download the pre-compiled binaries directly from the [Releases page](https://github.com/Ellian-Eorwyn/Hephaestus/releases).
+Puedes descargar los binarios precompilados directamente desde la [página de Releases](https://github.com/Ellian-Eorwyn/Hephaestus/releases).
 
-- **Windows:** Download the `.exe` installer.
-- **macOS:** Download the `.dmg` file.
-- **Linux:** Download the `.AppImage`.
+- **Windows:** Descarga el instalador `.exe`.
+- **macOS:** Descarga el archivo `.dmg`.
+- **Linux:** Descarga el `.AppImage`.
 
-Simply download the appropriate file for your operating system and run it to install Hephaestus.
+Simplemente descarga el archivo correspondiente a tu sistema operativo y ejecútalo para instalar Hefesto.
 
-## Setup & Usage
+## Configuración y uso
 
-Setup is entirely zero-config:
+La configuración es completamente zero-config:
 
-1. **Install** Hephaestus using the command for your OS.
-2. **Launch** the application.
-3. **Point it** at your existing pi agent folder.
+1. **Instala** Hefesto usando el comando correspondiente a tu sistema operativo.
+2. **Ejecuta** la aplicación.
+3. **Apunta** a tu carpeta de agentes pi existente.
 
-Hephaestus will automatically parse the harness structure and populate the interface with your agents and their data.
+Hefesto analizará automáticamente la estructura del harness y poblará la interfaz con tus agentes y sus datos.

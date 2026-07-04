@@ -1,29 +1,30 @@
-# Hephaestus 0.1.0 Alpha
+# Hefesto 0.1.0 Alpha
 
-Welcome to the very first alpha release of **Hephaestus** (v0.1.0)! 🎉 
+¡Bienvenido a la primera versión alfa de **Hefesto** (v0.1.0)! 🎉
 
-Hephaestus is our brand-new desktop GUI for managing and monitoring local LLM agents across multiple pi harness environments. We built this to solve the problem of interacting with agents solely through the command line, providing a clean, centralized interface for your workspaces.
+Hefesto es nuestra nueva interfaz gráfica de escritorio para gestionar y monitorear agentes LLM locales a través de múltiples entornos pi-harness. Construimos esto para resolver el problema de interactuar con agentes únicamente desde la línea de comandos, proporcionando una interfaz limpia y centralizada para tus espacios de trabajo.
 
-## 🚀 Key Features in this Alpha
+## 🚀 Funcionalidades clave en esta alfa
 
-* **Centralized Agent Management:** View all active agents, monitor their ongoing processes, and track their state from a single dashboard.
-* **Live File Viewing:** Instantly view and monitor the output of agent logs, configurations, and working files in real-time.
-* **Drag-and-Drop Workspaces:** Drag any folder directly from Finder or Explorer into the projects pane to instantly start chatting with an AI model about its contents and have it transform your files and data.
-* **Direct Harness Integration:** Works directly with your filesystem. It reads your existing harness configurations and agent data without requiring a separate database or configuration file.
-* **Harness Agnostic:** Out-of-the-box support for `pi-forge`, with the flexibility to connect to any custom pi harness installation.
-* **Cross-Platform:** Available for Windows, macOS, and Linux.
+* **Gestión centralizada de agentes:** Visualiza todos los agentes activos, monitorea sus procesos en curso y sigue su estado desde un único panel.
+* **Visor de archivos en vivo:** Visualiza y monitorea al instante la salida de logs, configuraciones y archivos de trabajo de los agentes en tiempo real.
+* **Espacios de trabajo por arrastrar y soltar:** Arrastra cualquier carpeta directamente desde el Finder o Explorer al panel de proyectos para comenzar a conversar con un modelo de IA sobre su contenido y transformar tus archivos y datos.
+* **Integración directa con harness:** Funciona directamente con tu sistema de archivos. Lee tus configuraciones de harness existentes y datos de agentes sin necesidad de una base de datos o archivo de configuración separado.
+* **Agnóstico de harness:** Soporte nativo para `pi-forge`, con la flexibilidad de conectarse a cualquier instalación personalizada de pi-harness.
+* **Multiplataforma:** Disponible para Windows, macOS y Linux.
 
-## 🛠️ Installation
+## 🛠️ Instalación
 
-You can download the pre-compiled binaries directly from the assets section below.
+Puedes descargar los binarios precompilados directamente desde la sección de assets a continuación.
 
-* **Windows:** Download the `.exe` installer.
-* **macOS:** Download the `.dmg` file.
-* **Linux:** Download the `.AppImage`.
+* **Windows:** Descarga el instalador `.exe`.
+* **macOS:** Descarga el archivo `.dmg`.
+* **Linux:** Descarga el `.AppImage`.
 
-Simply download the appropriate file for your operating system and run it to install Hephaestus.
+Simplemente descarga el archivo correspondiente a tu sistema operativo y ejecútalo para instalar Hefesto.
 
-## ⚠️ Alpha Notice
-This is an alpha release, meaning you might occasionally encounter a bug or rough edge. We'd love to hear your feedback, bug reports, and feature requests on our [GitHub repository](https://github.com/Ellian-Eorwyn/Hephaestus).
+## ⚠️ Aviso de versión alfa
 
-Thanks for joining us on this journey!
+Esta es una versión alfa, lo que significa que ocasionalmente podrías encontrarte con algún error o aspecto por pulir. Nos encantaría recibir tus comentarios, reportes de errores y solicitudes de funcionalidades en nuestro [repositorio de GitHub](https://github.com/Ellian-Eorwyn/Hephaestus).
+
+¡Gracias por acompañarnos en este viaje!
