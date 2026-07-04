@@ -9,14 +9,24 @@ import path from 'node:path'
  * (`whichInPath`) so there is one source of truth.
  */
 export function extraBinDirs(): string[] {
-  return ['/usr/local/bin', '/opt/homebrew/bin', `${process.env.HOME}/.hermes/node/bin`]
+  const bins = ['/usr/local/bin', '/opt/homebrew/bin', `${process.env.HOME}/.hermes/node/bin`]
+  // Windows: add npm global and pip scripts dirs
+  if (process.platform === 'win32') {
+    bins.push(
+      `${process.env.USERPROFILE}\\AppData\\Roaming\\npm`,
+      `${process.env.USERPROFILE}\\AppData\\Roaming\\Python\\Scripts`,
+      `${process.env.LOCALAPPDATA}\\pip\\Scripts`
+    )
+  }
+  return bins
 }
 
 /** Ensure common node/launcher install locations are on PATH for spawned processes. */
 export function augmentedPath(current: string | undefined): string {
-  const parts = (current ?? '').split(':').filter(Boolean)
+  const sep = path.delimiter
+  const parts = (current ?? '').split(sep).filter(Boolean)
   for (const p of extraBinDirs()) if (!parts.includes(p)) parts.push(p)
-  return parts.join(':')
+  return parts.join(sep)
 }
 
 /**
@@ -24,12 +34,17 @@ export function augmentedPath(current: string | undefined): string {
  * Returns the absolute path to the first executable match, or null.
  */
 export async function whichInPath(name: string): Promise<string | null> {
-  const dirs = augmentedPath(process.env.PATH).split(':').filter(Boolean)
+  const sep = path.delimiter
+  const dirs = augmentedPath(process.env.PATH).split(sep).filter(Boolean)
   for (const dir of dirs) {
     const full = path.join(dir, name)
     try {
       const st = await fs.stat(full)
-      if (st.isFile() && (st.mode & 0o100) !== 0) return full
+      if (st.isFile()) {
+        // Windows: no real executable bit; trust the file exists + has a known extension
+        if (process.platform === 'win32') return full
+        if ((st.mode & 0o100) !== 0) return full
+      }
     } catch {
       // not here; keep looking
     }

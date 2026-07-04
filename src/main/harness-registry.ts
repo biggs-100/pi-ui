@@ -172,8 +172,11 @@ export async function resolveCli(agentDir: string): Promise<string | null> {
       const full = path.join(binDir, name)
       try {
         const st = await fs.stat(full)
-        // Executable bit for owner.
-        if (st.isFile() && (st.mode & 0o100) !== 0) candidates.push(full)
+        if (st.isFile()) {
+          // Windows: no real executable bit; just having a .bat/.cmd/.ps1/.exe is enough
+          if (process.platform === 'win32') candidates.push(full)
+          else if ((st.mode & 0o100) !== 0) candidates.push(full)
+        }
       } catch {
         // ignore
       }
