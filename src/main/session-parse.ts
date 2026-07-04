@@ -38,8 +38,11 @@ export function decodeCwd(encoded: string): string {
 export function encodeCwd(cwd: string): string {
   // Normalise: resolve trailing slashes, collapse double slashes.
   const normalised = path.resolve(cwd)
-  // Strip the leading `/`, replace remaining `/` with `-`, wrap in `--…--`.
-  const inner = normalised.replace(/^\//, '').replace(/\//g, '-')
+  // Convert backslashes to forward slashes (Windows compat), strip leading /,
+  // replace remaining / with -, and remove drive-letter colon (: invalid in
+  // folder names on Windows). Wrap in --…-- for unambiguous parsing.
+  const posix = normalised.replace(/\\/g, '/')
+  const inner = posix.replace(/^\//, '').replace(/\//g, '-').replace(':', '')
   return `--${inner}--`
 }
 
